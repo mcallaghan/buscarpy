@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Calculate stopping criteria &#8212; Buscarpy 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="buscarpy package" href="../reference/buscarpy.html" />
+    <link rel="prev" title="Installation" href="../installation.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-auto-examples-plot-example-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code</p>
+</div>
+<section class="sphx-glr-example-title" id="calculate-stopping-criteria">
+<span id="sphx-glr-auto-examples-plot-example-py"></span><h1>Calculate stopping criteria<a class="headerlink" href="#calculate-stopping-criteria" title="Link to this heading">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p>When we do machine learning-prioritised screening in a systematic review, we
+can only save work if we have a method for deciding when to stop.
+Several methods have been suggested, but those which rely on rules of thumb
+(like stopping after N consecutive irrelevant records) are not supported by either
+theory or empirical evaluations. A particular value of N may work well in one
+review, but do badly in another. The right value depends on the size of the dataset,
+the prevalence of relevant documents, the effectiveness of the machine learning
+algorithm, and a bit of luck. Moreover, using such a criterion does not allow
+us to say anything about our expected recall, nor our confidence in achieving it.
+In callaghan_statistical_2020 we offered a theoretically well motivated stopping
+criteria, which we demonstrated was safe to use. It allows you to communicate
+your confidence in achieving any arbitrary recall target. This package aims to
+make this stopping criteria easy to use for R users.</p>
+</section>
+<section id="data">
+<h2>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h2>
+<p>Lets initialise some test data. For demonstration purposes, we define the number of documents,
+and the prevalence of relevant documents. Then we simulate a prioritised screening-like
+process, where we sample documents, where we are <cite>bias</cite> times more likely to select a random
+relevant document than a random irrelevant document.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">n_docs</span> <span class="o">=</span> <span class="mi">6000</span>
+<span class="n">n_relevant_docs</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">urn_bias</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="n">sample</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_docs</span><span class="p">)</span>
+<span class="n">sample</span><span class="p">[:</span><span class="n">n_relevant_docs</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">ps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_docs</span><span class="p">)</span>
+<span class="n">ps</span><span class="p">[:</span><span class="n">n_relevant_docs</span><span class="p">]</span> <span class="o">=</span> <span class="n">urn_bias</span>
+<span class="n">ps</span> <span class="o">=</span> <span class="n">ps</span><span class="o">/</span><span class="n">ps</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="n">sample</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span><span class="n">sample</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">ps</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;relevance&#39;</span><span class="p">:</span> <span class="n">sample</span><span class="p">})</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span>
+<span class="n">df</span><span class="o">.</span><span class="n">relevance</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_plot_example_001.png" srcset="../_images/sphx_glr_plot_example_001.png" alt="plot example" class = "sphx-glr-single-img"/><div class="output_subarea output_html rendered_html output_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>relevance</th>
+      <th>id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.0</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.0</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1.0</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+<br />
+<br /></section>
+<section id="when-is-it-safe-to-stop">
+<h2>When is it safe to stop?<a class="headerlink" href="#when-is-it-safe-to-stop" title="Link to this heading">¶</a></h2>
+<p>Let’s imagine we’ve seen just the first 20,000 documents. We can use our stopping criteria
+to calculate a p score for a null hypothesis that we have missed so many documents that we have
+not achieved our recall target.</p>
+<p>If the p score is low, then we can reject that null hypothesis and stop safely.
+The lower the score, the more confident we can be about doing this. The p score
+is given by calculating the probability of observing the previous sequence
+of relevant and irrelevant documents, if there were enough remaining relevant
+documents to mean that our recall target had not been achieved.</p>
+<p>For example, if we have seen 95 relevant documents,
+and our recall target is 95%, then there would have to be at least 6 relevant documents
+remaining for us to have missed our target. If we have just observed a sequence of 100 irrelevant
+document in a row, we ask how likely it would be to observe that by random sampling,
+if there were 6 relevant documents remaining.</p>
+<p>We can calculate this using the buscarR package, by passing dataframe with a column
+<cite>relevant</cite> that contains 1s and 0s for relevant and irrelevant documents (and NAs for
+documents we have not seen yet). A separate column <cite>seen</cite> tells us if this document
+has been seen by a human yet or not. The dataframe should have as many rows as there
+are unique documents in the dataset, should contain all that have been seen by a human
+and all documents that have not yet been seen by a human. The human-screened documents
+should be in the order in which they were screened.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">buscarpy</span> <span class="kn">import</span> <span class="n">calculate_h0</span>
+<span class="n">documents_seen</span> <span class="o">=</span> <span class="mi">1500</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;seen_relevance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span>
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:</span><span class="n">documents_seen</span><span class="p">,</span><span class="s1">&#39;seen_relevance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:</span><span class="n">documents_seen</span><span class="p">,</span><span class="s1">&#39;relevance&#39;</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">seen_relevance</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmax</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">calculate_h0</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_plot_example_002.png" srcset="../_images/sphx_glr_plot_example_002.png" alt="plot example" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0.9364539089256225
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.149 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-example-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/7edd55a52439250dd2a454d660d32ddf/plot_example.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_example.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/28bf5b885c707f7863eaed624722ca82/plot_example.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_example.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Buscarpy</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Calculate stopping criteria</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data">Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#when-is-it-safe-to-stop">When is it safe to stop?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/buscarpy.html">buscarpy package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../installation.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="../reference/buscarpy.html" title="next chapter">buscarpy package</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Max Callaghan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/auto_examples/plot_example.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
