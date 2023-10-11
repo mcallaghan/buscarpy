@@ -1,8 +1,0 @@
-buscarpy @ git+https://github.com/mcallaghan/buscarpy
-matplotlib==3.8.0
-scipy==1.11.3
-numpy==1.26.0
-pandas==2.1.1
-sphinx-gallery==0.14.0
-sphinxcontrib-apidoc==0.4.0
-twine==4.0.2
