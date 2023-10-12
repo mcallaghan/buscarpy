@@ -17,10 +17,11 @@ Calculate stopping criteria
 # the prevalence of relevant documents, the effectiveness of the machine learning
 # algorithm, and a bit of luck. Moreover, using such a criterion does not allow
 # us to say anything about our expected recall, nor our confidence in achieving it.
-# In callaghan_statistical_2020 we offered a theoretically well motivated stopping
+# In `Callaghan and Müller-Hansen, 2020 <https://doi.org/10.1186/s13643-020-01521-4>`_
+# we offered a theoretically well motivated stopping
 # criteria, which we demonstrated was safe to use. It allows you to communicate
 # your confidence in achieving any arbitrary recall target. This package aims to
-# make this stopping criteria easy to use for R users.
+# make this stopping criteria easy to use for python users.
 
 # %%
 # Data

@@ -21,7 +21,7 @@
 Calculate stopping criteria
 ===========================
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-24
+.. GENERATED FROM PYTHON SOURCE LINES 8-25
 
 Introduction
 ------------------------
@@ -35,12 +35,13 @@ review, but do badly in another. The right value depends on the size of the data
 the prevalence of relevant documents, the effectiveness of the machine learning
 algorithm, and a bit of luck. Moreover, using such a criterion does not allow
 us to say anything about our expected recall, nor our confidence in achieving it.
-In callaghan_statistical_2020 we offered a theoretically well motivated stopping
+In `Callaghan and Müller-Hansen, 2020 <https://doi.org/10.1186/s13643-020-01521-4>`_
+we offered a theoretically well motivated stopping
 criteria, which we demonstrated was safe to use. It allows you to communicate
 your confidence in achieving any arbitrary recall target. This package aims to
-make this stopping criteria easy to use for R users.
+make this stopping criteria easy to use for python users.
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-34
+.. GENERATED FROM PYTHON SOURCE LINES 27-35
 
 Data
 ------------------------
@@ -51,7 +52,7 @@ default values, and simulates a prioritised screening-like
 process, where we sample documents, where we are `bias` times more likely to select a random
 relevant document than a random irrelevant document.
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-44
+.. GENERATED FROM PYTHON SOURCE LINES 35-45
 
 .. code-block:: default
 
@@ -133,7 +134,7 @@ relevant document than a random irrelevant document.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 45-69
+.. GENERATED FROM PYTHON SOURCE LINES 46-70
 
 When is it safe to stop?
 ------------------------
@@ -160,7 +161,7 @@ in the dataset. The list of 1s and 0s represents INCLUDE and EXCLUDE decisions
 by human screeners, and should be in the order in which the documents were
 screened
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-80
+.. GENERATED FROM PYTHON SOURCE LINES 70-81
 
 .. code-block:: default
 
@@ -193,12 +194,12 @@ screened
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-83
+.. GENERATED FROM PYTHON SOURCE LINES 82-84
 
 Our p score indicates that we are not yet confident enough to stop screening.
 If we "see" an additional 2,000 documents, this will change
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-92
+.. GENERATED FROM PYTHON SOURCE LINES 84-93
 
 .. code-block:: default
 
@@ -229,11 +230,11 @@ If we "see" an additional 2,000 documents, this will change
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-94
+.. GENERATED FROM PYTHON SOURCE LINES 94-95
 
 We can now be **very confident** that we have **not missed** our recall target
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-101
+.. GENERATED FROM PYTHON SOURCE LINES 97-102
 
 Changing recall targets
 ------------------------
@@ -241,7 +242,7 @@ Changing recall targets
 We can calculate the same stopping criteria for a different **recall target**,
 simply by using the `recall_target` argument in `calculate_h0`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-104
+.. GENERATED FROM PYTHON SOURCE LINES 102-105
 
 .. code-block:: default
 
@@ -261,7 +262,7 @@ simply by using the `recall_target` argument in `calculate_h0`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-113
+.. GENERATED FROM PYTHON SOURCE LINES 106-114
 
 If we increase the recall target, we become **less** confident that we
 have **not missed** our target.
@@ -272,7 +273,7 @@ function calculates and plots the p score for several different recall targets,
 helping to inform and transparently communicate our decision about the safety
 of stopping screening at any given point.
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-118
+.. GENERATED FROM PYTHON SOURCE LINES 114-119
 
 .. code-block:: default
 
@@ -299,7 +300,7 @@ of stopping screening at any given point.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-127
+.. GENERATED FROM PYTHON SOURCE LINES 120-128
 
 Retrospective stopping criteria
 ------------------------
@@ -310,7 +311,7 @@ this after each batch of 1,000 documents. Change the `batch_size` to alter this,
 though be warned that reducing it will increase the number of calculations that
 needs to be made.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-132
+.. GENERATED FROM PYTHON SOURCE LINES 128-133
 
 .. code-block:: default
 
@@ -340,7 +341,7 @@ needs to be made.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-156
+.. GENERATED FROM PYTHON SOURCE LINES 134-157
 
 Biased urns
 ------------------------
@@ -366,7 +367,7 @@ how much more likely it is to select a relevant than a non-relevant document.
 However, estimating this parameter is non-trivial, and work
 on how to do this safely is currently ongoing.
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-171
+.. GENERATED FROM PYTHON SOURCE LINES 157-172
 
 .. code-block:: default
 
@@ -399,14 +400,14 @@ on how to do this safely is currently ongoing.
  .. code-block:: none
 
 
-    <matplotlib.legend.Legend object at 0x7f5b85237850>
+    <matplotlib.legend.Legend object at 0x7f55e0951cf0>
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 14.389 seconds)
+   **Total running time of the script:** (0 minutes 14.254 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_example.py:

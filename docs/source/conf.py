@@ -23,9 +23,12 @@ sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix()+'/src/
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
     'sphinxcontrib.apidoc'
 ]
+
+autosummary_generate = True
 
 apidoc_module_dir = '../../buscarpy/'
 apidoc_output_dir = 'reference'
@@ -33,8 +36,16 @@ apidoc_excluded_paths = ['tests']
 apidoc_separate_modules = True
 
 sphinx_gallery_conf = {
-     'examples_dirs': 'examples',   # path to your example scripts
-     'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
+    'examples_dirs': 'examples',   # path to your example scripts
+    'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
+    'reference_url': {
+         # The module you locally document uses None
+        'buscarpy': None,
+    },
+    'backreferences_dir': 'gen_modules/backreferences',
+    # Modules for which function/class level galleries are created. In
+    # this case sphinx_gallery and numpy in a tuple of strings.
+    'doc_module'          : ('buscarpy',),
 }
 
 templates_path = ['_templates']
