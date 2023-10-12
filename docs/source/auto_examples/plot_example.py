@@ -128,3 +128,43 @@ recall_frontier(seen_documents, df.shape[0])
 from buscarpy import retrospective_h0
 
 retrospective_h0(seen_documents, df.shape[0])
+
+# %%
+# Biased urns
+# ------------------------
+#
+# The stopping criteria, which is described in
+# `Callaghan and Müller-Hansen, 2020 <https://doi.org/10.1186/s13643-020-01521-4>`_
+# assumes that the documents we have screened previously were drawn *at random*
+# from the remaining records. This assumption is *conservative*, as the
+# machine-learning process should make it more likely that we pick a relevant
+# document than an irrelevant document.
+#
+# Being conservative, it is safe to use this stopping criteria (and evaluations
+# show that it is wrong less than 5% of the time if the confidence level is set
+# to 95%), but its conservative nature means that we will stop later than we
+# strictly need to.
+#
+# Biased urn theory offers us a more realistic set of assumptions, as it
+# describes the probability distribution given a situation where we are more
+# likely to select one type of item than another. We can implement this in
+# buscarpy, by setting the `bias` parameter of our functions. `bias` describes
+# how much more likely it is to select a relevant than a non-relevant document.
+#
+# However, estimating this parameter is non-trivial, and work
+# on how to do this safely is currently ongoing.
+
+h0_1 = retrospective_h0(seen_documents, df.shape[0], bias=1, plot=False)
+h0_5 = retrospective_h0(seen_documents, df.shape[0], bias=5, plot=False)
+
+fig, ax = plt.subplots()
+
+ax.plot(seen_documents.cumsum())
+ax2 = ax.twinx()
+ax2.scatter(h0_1['batch_sizes'], h0_1['p'], label='Unbiased')
+ax2.scatter(h0_5['batch_sizes'], h0_5['p'], label='Bias==5')
+ax.set_xlabel('Documents screened')
+ax.set_ylabel('Relevant documents identified')
+ax2.set_ylabel('p score for H0 that recall target missed')
+
+ax2.legend()

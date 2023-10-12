@@ -223,7 +223,46 @@ needs to be made.</p>
        0.0344359 ])}
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 6.649 seconds)</p>
+</section>
+<section id="biased-urns">
+<h2>Biased urns<a class="headerlink" href="#biased-urns" title="Link to this heading">¶</a></h2>
+<p>The stopping criteria, which is described in
+<a class="reference external" href="https://doi.org/10.1186/s13643-020-01521-4">Callaghan and Müller-Hansen, 2020</a>
+assumes that the documents we have screened previously were drawn <em>at random</em>
+from the remaining records. This assumption is <em>conservative</em>, as the
+machine-learning process should make it more likely that we pick a relevant
+document than an irrelevant document.</p>
+<p>Being conservative, it is safe to use this stopping criteria (and evaluations
+show that it is wrong less than 5% of the time if the confidence level is set
+to 95%), but its conservative nature means that we will stop later than we
+strictly need to.</p>
+<p>Biased urn theory offers us a more realistic set of assumptions, as it
+describes the probability distribution given a situation where we are more
+likely to select one type of item than another. We can implement this in
+buscarpy, by setting the <cite>bias</cite> parameter of our functions. <cite>bias</cite> describes
+how much more likely it is to select a relevant than a non-relevant document.</p>
+<p>However, estimating this parameter is non-trivial, and work
+on how to do this safely is currently ongoing.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">h0_1</span> <span class="o">=</span> <span class="n">retrospective_h0</span><span class="p">(</span><span class="n">seen_documents</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bias</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">h0_5</span> <span class="o">=</span> <span class="n">retrospective_h0</span><span class="p">(</span><span class="n">seen_documents</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bias</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">seen_documents</span><span class="o">.</span><span class="n">cumsum</span><span class="p">())</span>
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">h0_1</span><span class="p">[</span><span class="s1">&#39;batch_sizes&#39;</span><span class="p">],</span> <span class="n">h0_1</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Unbiased&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">h0_5</span><span class="p">[</span><span class="s1">&#39;batch_sizes&#39;</span><span class="p">],</span> <span class="n">h0_5</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Bias==5&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Documents screened&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Relevant documents identified&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;p score for H0 that recall target missed&#39;</span><span class="p">)</span>
+
+<span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_plot_example_006.png" srcset="../_images/sphx_glr_plot_example_006.png" alt="plot example" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend object at 0x7f5b85237850&gt;
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 14.389 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-example-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/7edd55a52439250dd2a454d660d32ddf/plot_example.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_example.py</span></code></a></p>
@@ -262,6 +301,7 @@ needs to be made.</p>
 <li class="toctree-l2"><a class="reference internal" href="#when-is-it-safe-to-stop">When is it safe to stop?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#changing-recall-targets">Changing recall targets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#retrospective-stopping-criteria">Retrospective stopping criteria</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#biased-urns">Biased urns</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/buscarpy.html">buscarpy package</a></li>

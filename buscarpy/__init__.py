@@ -1,5 +1,5 @@
 import math
-from scipy.stats import hypergeom
+from scipy.stats import hypergeom, nchypergeom_wallenius
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
@@ -110,12 +110,21 @@ def calculate_h0(
             urns.cumsum() # before each urn
         )
     )
-    p = hypergeom.cdf( # the probability of observing
-        urns.cumsum(), # the number of relevant documents in the sample
-        N - (urns.shape[0] - urn_sizes), # In a population made up out of the urn and all remaining docs
-        k_hat, # Where K_hat docs in the population are actually relevant
-        urn_sizes # After observing this many documents
-    )
+    if bias == 1:
+        p = hypergeom.cdf( # the probability of observing
+            urns.cumsum(), # the number of relevant documents in the sample
+            N - (urns.shape[0] - urn_sizes), # In a population made up out of the urn and all remaining docs
+            k_hat, # Where K_hat docs in the population are actually relevant
+            urn_sizes # After observing this many documents
+        )
+    else:
+        p = nchypergeom_wallenius.cdf(
+            urns.cumsum(), # the number of relevant documents in the sample
+            N - (urns.shape[0] - urn_sizes), # In a population made up out of the urn and all remaining docs
+            k_hat, # Where K_hat docs in the population are actually relevant
+            urn_sizes, # After observing this many documents
+            bias # Where we are bias times more likely to pick a random relevant document
+        )
     return min(p)
 
 def recall_frontier(

@@ -310,7 +310,7 @@ this after each batch of 1,000 documents. Change the `batch_size` to alter this,
 though be warned that reducing it will increase the number of calculations that
 needs to be made.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-131
+.. GENERATED FROM PYTHON SOURCE LINES 127-132
 
 .. code-block:: default
 
@@ -318,6 +318,7 @@ needs to be made.
     from buscarpy import retrospective_h0
 
     retrospective_h0(seen_documents, df.shape[0])
+
 
 
 
@@ -339,10 +340,73 @@ needs to be made.
 
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 133-156
+
+Biased urns
+------------------------
+
+The stopping criteria, which is described in
+`Callaghan and Müller-Hansen, 2020 <https://doi.org/10.1186/s13643-020-01521-4>`_
+assumes that the documents we have screened previously were drawn *at random*
+from the remaining records. This assumption is *conservative*, as the
+machine-learning process should make it more likely that we pick a relevant
+document than an irrelevant document.
+
+Being conservative, it is safe to use this stopping criteria (and evaluations
+show that it is wrong less than 5% of the time if the confidence level is set
+to 95%), but its conservative nature means that we will stop later than we
+strictly need to.
+
+Biased urn theory offers us a more realistic set of assumptions, as it
+describes the probability distribution given a situation where we are more
+likely to select one type of item than another. We can implement this in
+buscarpy, by setting the `bias` parameter of our functions. `bias` describes
+how much more likely it is to select a relevant than a non-relevant document.
+
+However, estimating this parameter is non-trivial, and work
+on how to do this safely is currently ongoing.
+
+.. GENERATED FROM PYTHON SOURCE LINES 156-171
+
+.. code-block:: default
+
+
+    h0_1 = retrospective_h0(seen_documents, df.shape[0], bias=1, plot=False)
+    h0_5 = retrospective_h0(seen_documents, df.shape[0], bias=5, plot=False)
+
+    fig, ax = plt.subplots()
+
+    ax.plot(seen_documents.cumsum())
+    ax2 = ax.twinx()
+    ax2.scatter(h0_1['batch_sizes'], h0_1['p'], label='Unbiased')
+    ax2.scatter(h0_5['batch_sizes'], h0_5['p'], label='Bias==5')
+    ax.set_xlabel('Documents screened')
+    ax.set_ylabel('Relevant documents identified')
+    ax2.set_ylabel('p score for H0 that recall target missed')
+
+    ax2.legend()
+
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_plot_example_006.png
+   :alt: plot example
+   :srcset: /auto_examples/images/sphx_glr_plot_example_006.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    <matplotlib.legend.Legend object at 0x7f5b85237850>
+
+
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 6.649 seconds)
+   **Total running time of the script:** (0 minutes 14.389 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_example.py:
