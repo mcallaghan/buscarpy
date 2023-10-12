@@ -60,29 +60,18 @@ make this stopping criteria easy to use for R users.</p>
 </section>
 <section id="data">
 <h2>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h2>
-<p>Lets initialise some test data. For demonstration purposes, we define the number of documents,
-and the prevalence of relevant documents. Then we simulate a prioritised screening-like
+<p>Lets initialise some test data. The <cite>generate_data</cite> function takes a number
+of documents, as well as the  the prevalence of relevant documents, or uses
+default values, and simulates a prioritised screening-like
 process, where we sample documents, where we are <cite>bias</cite> times more likely to select a random
 relevant document than a random irrelevant document.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">buscarpy</span> <span class="kn">import</span> <span class="n">generate_dataset</span>
 
-<span class="n">n_docs</span> <span class="o">=</span> <span class="mi">6000</span>
-<span class="n">n_relevant_docs</span> <span class="o">=</span> <span class="mi">1000</span>
-<span class="n">urn_bias</span> <span class="o">=</span> <span class="mi">20</span>
-
-<span class="n">sample</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_docs</span><span class="p">)</span>
-<span class="n">sample</span><span class="p">[:</span><span class="n">n_relevant_docs</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-
-<span class="n">ps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_docs</span><span class="p">)</span>
-<span class="n">ps</span><span class="p">[:</span><span class="n">n_relevant_docs</span><span class="p">]</span> <span class="o">=</span> <span class="n">urn_bias</span>
-<span class="n">ps</span> <span class="o">=</span> <span class="n">ps</span><span class="o">/</span><span class="n">ps</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-
-<span class="n">sample</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span><span class="n">sample</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">ps</span><span class="p">)</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;relevance&#39;</span><span class="p">:</span> <span class="n">sample</span><span class="p">})</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span>
-<span class="n">df</span><span class="o">.</span><span class="n">relevance</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">generate_dataset</span><span class="p">(</span><span class="n">random_seed</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">relevant</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 <span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -105,34 +94,34 @@ relevant document than a random irrelevant document.</p>
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>relevance</th>
+      <th>relevant</th>
       <th>id</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>1.0</td>
+      <td>0</td>
       <td>0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>1.0</td>
+      <td>0</td>
       <td>1</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>1.0</td>
+      <td>0</td>
       <td>2</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>1.0</td>
+      <td>0</td>
       <td>3</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>1.0</td>
+      <td>0</td>
       <td>4</td>
     </tr>
   </tbody>
@@ -143,7 +132,7 @@ relevant document than a random irrelevant document.</p>
 <br /></section>
 <section id="when-is-it-safe-to-stop">
 <h2>When is it safe to stop?<a class="headerlink" href="#when-is-it-safe-to-stop" title="Link to this heading">¶</a></h2>
-<p>Let’s imagine we’ve seen just the first 20,000 documents. We can use our stopping criteria
+<p>Let’s imagine we’ve seen just the first 10,000 documents. We can use our stopping criteria
 to calculate a p score for a null hypothesis that we have missed so many documents that we have
 not achieved our recall target.</p>
 <p>If the p score is low, then we can reject that null hypothesis and stop safely.
@@ -156,28 +145,85 @@ and our recall target is 95%, then there would have to be at least 6 relevant do
 remaining for us to have missed our target. If we have just observed a sequence of 100 irrelevant
 document in a row, we ask how likely it would be to observe that by random sampling,
 if there were 6 relevant documents remaining.</p>
-<p>We can calculate this using the buscarR package, by passing dataframe with a column
-<cite>relevant</cite> that contains 1s and 0s for relevant and irrelevant documents (and NAs for
-documents we have not seen yet). A separate column <cite>seen</cite> tells us if this document
-has been seen by a human yet or not. The dataframe should have as many rows as there
-are unique documents in the dataset, should contain all that have been seen by a human
-and all documents that have not yet been seen by a human. The human-screened documents
-should be in the order in which they were screened.</p>
+<p>We can calculate this using the buscarR package, by passing a list of 1s and 0s
+to our <cite>calculate_h0</cite> function, along with the total number of documents in
+in the dataset. The list of 1s and 0s represents INCLUDE and EXCLUDE decisions
+by human screeners, and should be in the order in which the documents were
+screened</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">buscarpy</span> <span class="kn">import</span> <span class="n">calculate_h0</span>
-<span class="n">documents_seen</span> <span class="o">=</span> <span class="mi">1500</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;seen_relevance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span>
-<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:</span><span class="n">documents_seen</span><span class="p">,</span><span class="s1">&#39;seen_relevance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:</span><span class="n">documents_seen</span><span class="p">,</span><span class="s1">&#39;relevance&#39;</span><span class="p">]</span>
+<span class="n">seen_documents</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;relevant&#39;</span><span class="p">][:</span><span class="mi">10000</span><span class="p">]</span>
+
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">df</span><span class="o">.</span><span class="n">seen_relevance</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">seen_documents</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmax</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-<span class="n">calculate_h0</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">calculate_h0</span><span class="p">(</span><span class="n">seen_documents</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_plot_example_002.png" srcset="../_images/sphx_glr_plot_example_002.png" alt="plot example" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0.9364539089256225
+<img src="../_images/sphx_glr_plot_example_002.png" srcset="../_images/sphx_glr_plot_example_002.png" alt="plot example" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0.10980177863883214
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.149 seconds)</p>
+<p>Our p score indicates that we are not yet confident enough to stop screening.
+If we “see” an additional 2,000 documents, this will change</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seen_documents</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;relevant&#39;</span><span class="p">][:</span><span class="mi">12000</span><span class="p">]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">seen_documents</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmax</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">calculate_h0</span><span class="p">(</span><span class="n">seen_documents</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_plot_example_003.png" srcset="../_images/sphx_glr_plot_example_003.png" alt="plot example" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0.009418930806106517
+</pre></div>
+</div>
+<p>We can now be <strong>very confident</strong> that we have <strong>not missed</strong> our recall target</p>
+</section>
+<section id="changing-recall-targets">
+<h2>Changing recall targets<a class="headerlink" href="#changing-recall-targets" title="Link to this heading">¶</a></h2>
+<p>We can calculate the same stopping criteria for a different <strong>recall target</strong>,
+simply by using the <cite>recall_target</cite> argument in <cite>calculate_h0</cite>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">calculate_h0</span><span class="p">(</span><span class="n">seen_documents</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">recall_target</span><span class="o">=</span><span class="mf">0.99</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0.2803368882417732
+</pre></div>
+</div>
+<p>If we increase the recall target, we become <strong>less</strong> confident that we
+have <strong>not missed</strong> our target.</p>
+<p>In many practical cases, we may not be very confident in one target, but much
+more confident in a target that is only a little smaller. The <cite>recall_frontier</cite>
+function calculates and plots the p score for several different recall targets,
+helping to inform and transparently communicate our decision about the safety
+of stopping screening at any given point.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">buscarpy</span> <span class="kn">import</span> <span class="n">recall_frontier</span>
+
+<span class="n">recall_frontier</span><span class="p">(</span><span class="n">seen_documents</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_plot_example_004.png" srcset="../_images/sphx_glr_plot_example_004.png" alt="plot example" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;recall_target&#39;: [0.99, 0.985, 0.98, 0.975, 0.97, 0.965, 0.96, 0.955, 0.95], &#39;p&#39;: [0.2803368882417732, 0.18345778193694434, 0.12005306689318333, 0.07855821491332465, 0.051403320783917274, 0.033633492389149526, 0.022005638245933937, 0.014397171706505495, 0.009418930806106517]}
+</pre></div>
+</div>
+</section>
+<section id="retrospective-stopping-criteria">
+<h2>Retrospective stopping criteria<a class="headerlink" href="#retrospective-stopping-criteria" title="Link to this heading">¶</a></h2>
+<p>The package also includes a helper function to calculate the stopping criteria
+at each point on a curve that has already been seen. By default we calculate
+this after each batch of 1,000 documents. Change the <cite>batch_size</cite> to alter this,
+though be warned that reducing it will increase the number of calculations that
+needs to be made.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">buscarpy</span> <span class="kn">import</span> <span class="n">retrospective_h0</span>
+
+<span class="n">retrospective_h0</span><span class="p">(</span><span class="n">seen_documents</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_plot_example_005.png" srcset="../_images/sphx_glr_plot_example_005.png" alt="plot example" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;batch_sizes&#39;: array([ 1000,  2000,  3000,  4000,  5000,  6000,  7000,  8000,  9000,
+       10000, 11000]), &#39;p&#39;: array([0.99606155, 0.99302676, 0.97631598, 0.99875051, 0.97048041,
+       0.89350356, 0.68316963, 0.81479109, 0.31343407, 0.10980178,
+       0.0344359 ])}
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 6.649 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-example-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/7edd55a52439250dd2a454d660d32ddf/plot_example.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_example.py</span></code></a></p>
@@ -214,6 +260,8 @@ should be in the order in which they were screened.</p>
 <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data">Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#when-is-it-safe-to-stop">When is it safe to stop?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#changing-recall-targets">Changing recall targets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#retrospective-stopping-criteria">Retrospective stopping criteria</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/buscarpy.html">buscarpy package</a></li>

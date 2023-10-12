@@ -26,37 +26,26 @@ Calculate stopping criteria
 # Data
 # ------------------------
 #
-# Lets initialise some test data. For demonstration purposes, we define the number of documents,
-# and the prevalence of relevant documents. Then we simulate a prioritised screening-like
+# Lets initialise some test data. The `generate_data` function takes a number
+# of documents, as well as the  the prevalence of relevant documents, or uses
+# default values, and simulates a prioritised screening-like
 # process, where we sample documents, where we are `bias` times more likely to select a random
 # relevant document than a random irrelevant document.
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from buscarpy import generate_dataset
 
-n_docs = 6000
-n_relevant_docs = 1000
-urn_bias = 20
-
-sample = np.zeros(n_docs)
-sample[:n_relevant_docs] = 1
-
-ps = np.ones(n_docs)
-ps[:n_relevant_docs] = urn_bias
-ps = ps/ps.sum()
-
-sample = np.random.choice(sample,sample.shape,replace=False, p=ps)
-df = pd.DataFrame({'relevance': sample})
-df['id'] = df.index
-df.relevance.cumsum().plot()
+df = generate_dataset(random_seed=12345)
+df.relevant.cumsum().plot()
 df.head()
 
 # %%
 # When is it safe to stop?
 # ------------------------
 #
-# Let's imagine we've seen just the first 20,000 documents. We can use our stopping criteria
+# Let's imagine we've seen just the first 10,000 documents. We can use our stopping criteria
 # to calculate a p score for a null hypothesis that we have missed so many documents that we have
 # not achieved our recall target.
 #
@@ -72,21 +61,70 @@ df.head()
 # document in a row, we ask how likely it would be to observe that by random sampling,
 # if there were 6 relevant documents remaining.
 #
-# We can calculate this using the buscarR package, by passing dataframe with a column
-# `relevant` that contains 1s and 0s for relevant and irrelevant documents (and NAs for
-# documents we have not seen yet). A separate column `seen` tells us if this document
-# has been seen by a human yet or not. The dataframe should have as many rows as there
-# are unique documents in the dataset, should contain all that have been seen by a human
-# and all documents that have not yet been seen by a human. The human-screened documents
-# should be in the order in which they were screened.
+# We can calculate this using the buscarR package, by passing a list of 1s and 0s
+# to our `calculate_h0` function, along with the total number of documents in
+# in the dataset. The list of 1s and 0s represents INCLUDE and EXCLUDE decisions
+# by human screeners, and should be in the order in which the documents were
+# screened
 
 
 from buscarpy import calculate_h0
-documents_seen = 1500
-df['seen_relevance'] = np.NaN
-df.loc[:documents_seen,'seen_relevance'] = df.loc[:documents_seen,'relevance']
+seen_documents = df['relevant'][:10000]
+
 fig, ax = plt.subplots()
-df.seen_relevance.cumsum().plot()
+seen_documents.cumsum().plot()
 ax.set_xlim(xmax=df.shape[0])
 
-calculate_h0(df)
+calculate_h0(seen_documents, df.shape[0])
+
+# %%
+# Our p score indicates that we are not yet confident enough to stop screening.
+# If we "see" an additional 2,000 documents, this will change
+
+seen_documents = df['relevant'][:12000]
+
+fig, ax = plt.subplots()
+seen_documents.cumsum().plot()
+ax.set_xlim(xmax=df.shape[0])
+
+calculate_h0(seen_documents, df.shape[0])
+
+# %%
+# We can now be **very confident** that we have **not missed** our recall target
+
+# %%
+# Changing recall targets
+# ------------------------
+#
+# We can calculate the same stopping criteria for a different **recall target**,
+# simply by using the `recall_target` argument in `calculate_h0`.
+
+calculate_h0(seen_documents, df.shape[0], recall_target=0.99)
+
+# %%
+# If we increase the recall target, we become **less** confident that we
+# have **not missed** our target.
+#
+# In many practical cases, we may not be very confident in one target, but much
+# more confident in a target that is only a little smaller. The `recall_frontier`
+# function calculates and plots the p score for several different recall targets,
+# helping to inform and transparently communicate our decision about the safety
+# of stopping screening at any given point.
+
+from buscarpy import recall_frontier
+
+recall_frontier(seen_documents, df.shape[0])
+
+# %%
+# Retrospective stopping criteria
+# ------------------------
+#
+# The package also includes a helper function to calculate the stopping criteria
+# at each point on a curve that has already been seen. By default we calculate
+# this after each batch of 1,000 documents. Change the `batch_size` to alter this,
+# though be warned that reducing it will increase the number of calculations that
+# needs to be made.
+
+from buscarpy import retrospective_h0
+
+retrospective_h0(seen_documents, df.shape[0])

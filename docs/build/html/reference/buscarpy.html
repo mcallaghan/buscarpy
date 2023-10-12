@@ -40,34 +40,121 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-buscarpy" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="buscarpy.calculate_h0">
-<span class="sig-prename descclassname"><span class="pre">buscarpy.</span></span><span class="sig-name descname"><span class="pre">calculate_h0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recall_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#buscarpy.calculate_h0" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the smallest number of relevant documents there would have to be in our urn, for us to have missed a given recall recall_target</p>
+<span class="sig-prename descclassname"><span class="pre">buscarpy.</span></span><span class="sig-name descname"><span class="pre">calculate_h0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">int64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recall_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#buscarpy.calculate_h0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates a p-score for our null hypothesis h0, that we have missed our recall target <cite>recall_target</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>r_seen</strong> – the number of relevant documents seen.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> (<em>list</em><em>|</em><em>np.array</em><em>|</em><em>pd.Series</em>) – An ordered sequence of 1s and 0s representing, in the order
+in which they were screened, relevant and irrelevant documents
+respectively.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – The total number of documents from which you want to find the
+relevant examples. The size of the haystack.</p></li>
+<li><p><strong>recall_target</strong> (<em>float</em>) – The proportion of truly relevant documents you want
+to find, defaults to 0.95</p></li>
+<li><p><strong>bias</strong> (<em>float</em>) – The assumed likelihood of drawing a random relevant document
+over the likelihood of drawing a random irrelevant document. The higher
+this is, the better our ML has worked. When this is different to 1,
+we calculate the p score using biased urns.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The number smallest number of relevant documents that could be in our urn that there could be if we had missed our recall target</p>
+<dd class="field-even"><p>a p-score for our null hypothesis. We can reject the null hypothesis (and stop screening) if p is below 1 - our confidence level.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="buscarpy.k_h0">
-<span class="sig-prename descclassname"><span class="pre">buscarpy.</span></span><span class="sig-name descname"><span class="pre">k_h0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_al</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_seen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recall_target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#buscarpy.k_h0" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the smallest number of relevant documents there would have to be in our urn, for us to have missed a given recall recall_target</p>
+<dt class="sig sig-object py" id="buscarpy.generate_dataset">
+<span class="sig-prename descclassname"><span class="pre">buscarpy.</span></span><span class="sig-name descname"><span class="pre">generate_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prevalence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#buscarpy.generate_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a dataset resembling the kind created through machine learning
+prioritised screening.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>r_seen</strong> – the number of relevant documents seen.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N</strong> (<em>int</em>) – The number of documents returned by the query</p></li>
+<li><p><strong>prevalence</strong> (<em>float</em>) – The proportion of those documents which are relevant</p></li>
+<li><p><strong>bias</strong> (<em>float</em>) – The likelihood of drawing a random relevant document over the
+likelihood of drawing a random irrelevant document. The higher this is,
+the better our ML has worked.</p></li>
+<li><p><strong>random_seed</strong> (<em>int</em><em>|</em><em>None</em>) – A random seed. Set this to ensure the same sequence of
+documents is drawn each time the code is run.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The number smallest number of relevant documents that could be in our urn that there could be if we had missed our recall target</p>
+<dd class="field-even"><p>A dataframe with a <cite>N</cite> rows, of which <cite>prevalence`*`N</cite> are relevant.
+The column <cite>relevant</cite> is made up of 1s and 0s, where 1 represents a
+relevant, and 0 an irrelevant document</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="buscarpy.recall_frontier">
+<span class="sig-prename descclassname"><span class="pre">buscarpy.</span></span><span class="sig-name descname"><span class="pre">recall_frontier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">int64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#buscarpy.recall_frontier" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates a p-score for our null hypothesis h0, that we have missed our recall target <cite>recall_target</cite>, across a range of recall_targets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> (<em>list</em><em>|</em><em>np.array</em><em>|</em><em>pd.Series</em>) – An ordered sequence of 1s and 0s representing, in the order
+in which they were screened, relevant and irrelevant documents
+respectively.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – The total number of documents from which you want to find the
+relevant examples. The size of the haystack.</p></li>
+<li><p><strong>bias</strong> (<em>float</em>) – The assumed likelihood of drawing a random relevant document
+over the likelihood of drawing a random irrelevant document. The higher
+this is, the better our ML has worked. When this is different to 1,
+we calculate the p score using biased urns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing a list of recall targets: <cite>recall_target</cite>.
+alongside a list of p-scores: <cite>p</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="buscarpy.retrospective_h0">
+<span class="sig-prename descclassname"><span class="pre">buscarpy.</span></span><span class="sig-name descname"><span class="pre">retrospective_h0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">int64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recall_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#buscarpy.retrospective_h0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates a p-score for our null hypothesis h0, that we have missed our recall target <cite>recall_target</cite>, every <cite>batch_size</cite> documents</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> (<em>list</em><em>|</em><em>np.array</em><em>|</em><em>pd.Series</em>) – An ordered sequence of 1s and 0s representing, in the order
+in which they were screened, relevant and irrelevant documents
+respectively.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – The total number of documents from which you want to find the
+relevant examples. The size of the haystack.</p></li>
+<li><p><strong>recall_target</strong> (<em>float</em>) – The proportion of truly relevant documents you want
+to find, defaults to 0.95</p></li>
+<li><p><strong>bias</strong> (<em>float</em>) – The assumed likelihood of drawing a random relevant document
+over the likelihood of drawing a random irrelevant document. The higher
+this is, the better our ML has worked. When this is different to 1,
+we calculate the p score using biased urns.</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – The size of the batches for which we will calculate our
+stopping criteria. Smaller batches = greater granularity = more
+computation time.</p></li>
+<li><p><strong>confidence_level</strong> – The score will be calculated until p is smaller
+than 1-<cite>confidence_level</cite></p></li>
+<li><p><strong>plot</strong> (<em>bool</em>) – Whether to do a plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing a list of batch sizes: <cite>batch_sizes</cite>.
+alongside a list of p-scores: <cite>p</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

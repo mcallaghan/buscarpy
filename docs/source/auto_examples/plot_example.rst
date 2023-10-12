@@ -40,17 +40,18 @@ criteria, which we demonstrated was safe to use. It allows you to communicate
 your confidence in achieving any arbitrary recall target. This package aims to
 make this stopping criteria easy to use for R users.
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-33
+.. GENERATED FROM PYTHON SOURCE LINES 26-34
 
 Data
 ------------------------
 
-Lets initialise some test data. For demonstration purposes, we define the number of documents,
-and the prevalence of relevant documents. Then we simulate a prioritised screening-like
+Lets initialise some test data. The `generate_data` function takes a number
+of documents, as well as the  the prevalence of relevant documents, or uses
+default values, and simulates a prioritised screening-like
 process, where we sample documents, where we are `bias` times more likely to select a random
 relevant document than a random irrelevant document.
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-55
+.. GENERATED FROM PYTHON SOURCE LINES 34-44
 
 .. code-block:: default
 
@@ -58,22 +59,10 @@ relevant document than a random irrelevant document.
     import numpy as np
     import pandas as pd
     import matplotlib.pyplot as plt
+    from buscarpy import generate_dataset
 
-    n_docs = 6000
-    n_relevant_docs = 1000
-    urn_bias = 20
-
-    sample = np.zeros(n_docs)
-    sample[:n_relevant_docs] = 1
-
-    ps = np.ones(n_docs)
-    ps[:n_relevant_docs] = urn_bias
-    ps = ps/ps.sum()
-
-    sample = np.random.choice(sample,sample.shape,replace=False, p=ps)
-    df = pd.DataFrame({'relevance': sample})
-    df['id'] = df.index
-    df.relevance.cumsum().plot()
+    df = generate_dataset(random_seed=12345)
+    df.relevant.cumsum().plot()
     df.head()
 
 
@@ -107,34 +96,34 @@ relevant document than a random irrelevant document.
       <thead>
         <tr style="text-align: right;">
           <th></th>
-          <th>relevance</th>
+          <th>relevant</th>
           <th>id</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th>0</th>
-          <td>1.0</td>
+          <td>0</td>
           <td>0</td>
         </tr>
         <tr>
           <th>1</th>
-          <td>1.0</td>
+          <td>0</td>
           <td>1</td>
         </tr>
         <tr>
           <th>2</th>
-          <td>1.0</td>
+          <td>0</td>
           <td>2</td>
         </tr>
         <tr>
           <th>3</th>
-          <td>1.0</td>
+          <td>0</td>
           <td>3</td>
         </tr>
         <tr>
           <th>4</th>
-          <td>1.0</td>
+          <td>0</td>
           <td>4</td>
         </tr>
       </tbody>
@@ -144,12 +133,12 @@ relevant document than a random irrelevant document.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-82
+.. GENERATED FROM PYTHON SOURCE LINES 45-69
 
 When is it safe to stop?
 ------------------------
 
-Let's imagine we've seen just the first 20,000 documents. We can use our stopping criteria
+Let's imagine we've seen just the first 10,000 documents. We can use our stopping criteria
 to calculate a p score for a null hypothesis that we have missed so many documents that we have
 not achieved our recall target.
 
@@ -165,29 +154,27 @@ remaining for us to have missed our target. If we have just observed a sequence 
 document in a row, we ask how likely it would be to observe that by random sampling,
 if there were 6 relevant documents remaining.
 
-We can calculate this using the buscarR package, by passing dataframe with a column
-`relevant` that contains 1s and 0s for relevant and irrelevant documents (and NAs for
-documents we have not seen yet). A separate column `seen` tells us if this document
-has been seen by a human yet or not. The dataframe should have as many rows as there
-are unique documents in the dataset, should contain all that have been seen by a human
-and all documents that have not yet been seen by a human. The human-screened documents
-should be in the order in which they were screened.
+We can calculate this using the buscarR package, by passing a list of 1s and 0s
+to our `calculate_h0` function, along with the total number of documents in
+in the dataset. The list of 1s and 0s represents INCLUDE and EXCLUDE decisions
+by human screeners, and should be in the order in which the documents were
+screened
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-93
+.. GENERATED FROM PYTHON SOURCE LINES 69-80
 
 .. code-block:: default
 
 
 
     from buscarpy import calculate_h0
-    documents_seen = 1500
-    df['seen_relevance'] = np.NaN
-    df.loc[:documents_seen,'seen_relevance'] = df.loc[:documents_seen,'relevance']
+    seen_documents = df['relevant'][:10000]
+
     fig, ax = plt.subplots()
-    df.seen_relevance.cumsum().plot()
+    seen_documents.cumsum().plot()
     ax.set_xlim(xmax=df.shape[0])
 
-    calculate_h0(df)
+    calculate_h0(seen_documents, df.shape[0])
+
 
 
 
@@ -202,14 +189,160 @@ should be in the order in which they were screened.
  .. code-block:: none
 
 
-    0.9364539089256225
+    0.10980177863883214
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 81-83
+
+Our p score indicates that we are not yet confident enough to stop screening.
+If we "see" an additional 2,000 documents, this will change
+
+.. GENERATED FROM PYTHON SOURCE LINES 83-92
+
+.. code-block:: default
+
+
+    seen_documents = df['relevant'][:12000]
+
+    fig, ax = plt.subplots()
+    seen_documents.cumsum().plot()
+    ax.set_xlim(xmax=df.shape[0])
+
+    calculate_h0(seen_documents, df.shape[0])
+
+
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_plot_example_003.png
+   :alt: plot example
+   :srcset: /auto_examples/images/sphx_glr_plot_example_003.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    0.009418930806106517
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 93-94
+
+We can now be **very confident** that we have **not missed** our recall target
+
+.. GENERATED FROM PYTHON SOURCE LINES 96-101
+
+Changing recall targets
+------------------------
+
+We can calculate the same stopping criteria for a different **recall target**,
+simply by using the `recall_target` argument in `calculate_h0`.
+
+.. GENERATED FROM PYTHON SOURCE LINES 101-104
+
+.. code-block:: default
+
+
+    calculate_h0(seen_documents, df.shape[0], recall_target=0.99)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    0.2803368882417732
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 105-113
+
+If we increase the recall target, we become **less** confident that we
+have **not missed** our target.
+
+In many practical cases, we may not be very confident in one target, but much
+more confident in a target that is only a little smaller. The `recall_frontier`
+function calculates and plots the p score for several different recall targets,
+helping to inform and transparently communicate our decision about the safety
+of stopping screening at any given point.
+
+.. GENERATED FROM PYTHON SOURCE LINES 113-118
+
+.. code-block:: default
+
+
+    from buscarpy import recall_frontier
+
+    recall_frontier(seen_documents, df.shape[0])
+
+
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_plot_example_004.png
+   :alt: plot example
+   :srcset: /auto_examples/images/sphx_glr_plot_example_004.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    {'recall_target': [0.99, 0.985, 0.98, 0.975, 0.97, 0.965, 0.96, 0.955, 0.95], 'p': [0.2803368882417732, 0.18345778193694434, 0.12005306689318333, 0.07855821491332465, 0.051403320783917274, 0.033633492389149526, 0.022005638245933937, 0.014397171706505495, 0.009418930806106517]}
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 119-127
+
+Retrospective stopping criteria
+------------------------
+
+The package also includes a helper function to calculate the stopping criteria
+at each point on a curve that has already been seen. By default we calculate
+this after each batch of 1,000 documents. Change the `batch_size` to alter this,
+though be warned that reducing it will increase the number of calculations that
+needs to be made.
+
+.. GENERATED FROM PYTHON SOURCE LINES 127-131
+
+.. code-block:: default
+
+
+    from buscarpy import retrospective_h0
+
+    retrospective_h0(seen_documents, df.shape[0])
+
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_plot_example_005.png
+   :alt: plot example
+   :srcset: /auto_examples/images/sphx_glr_plot_example_005.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    {'batch_sizes': array([ 1000,  2000,  3000,  4000,  5000,  6000,  7000,  8000,  9000,
+           10000, 11000]), 'p': array([0.99606155, 0.99302676, 0.97631598, 0.99875051, 0.97048041,
+           0.89350356, 0.68316963, 0.81479109, 0.31343407, 0.10980178,
+           0.0344359 ])}
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.149 seconds)
+   **Total running time of the script:** (0 minutes 6.649 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_example.py:
