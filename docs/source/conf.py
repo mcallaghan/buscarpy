@@ -28,7 +28,7 @@ extensions = [
     'sphinxcontrib.apidoc'
 ]
 
-autosummary_generate = True
+#autosummary_generate = True
 
 apidoc_module_dir = '../../buscarpy/'
 apidoc_output_dir = 'reference'
